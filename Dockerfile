@@ -1,58 +1,40 @@
 FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive \
-    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies for Firefox
+# System dependencies for Camoufox + browser-use
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    firefox-esr \
-    libgtk-3-0 \
-    libdbus-glib-1-2 \
-    libxt6 \
-    libpci3 \
-    libasound2 \
-    libcups2 \
-    libdrm2 \
-    libgbm1 \
-    libxcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxfixes3 \
-    libxrandr2 \
-    libxshmfence1 \
-    libxss1 \
-    libxtst6 \
-    libnss3 \
-    libnspr4 \
-    fonts-liberation \
-    fonts-noto-color-emoji \
-    fonts-noto-cjk \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    libgtk-3-0 libgconf-2-4 libdbus-glib-1-2 libxt6 libpci3 \
+    libasound2 libcups2 libdrm2 libgbm1 libxcb1 libxcomposite1 \
+    libxdamage1 libxfixes3 libxrandr2 libxshmfence1 libxss1 libxtst6 \
+    libnss3 libnspr4 ca-certificates \
+    fonts-liberation fonts-noto-color-emoji fonts-noto-cjk \
+    curl wget xvfb x11-utils novnc websockify \
+    && rm -rf /var/lib/apt/lists/* && apt-get clean
 
-# Install Python dependencies
+# Python dependencies
 RUN pip install --no-cache-dir \
-    playwright==1.48.0 \
+    camoufox==0.2.14 \
+    browser-use==0.1.0 \
     flask==3.0.0 \
-    requests==2.31.0 \
-    beautifulsoup4==4.12.3 \
-    ollama==0.4.0
-
-# Install ONLY Playwright Firefox browser (skip install-deps, we already have deps)
-RUN playwright install firefox
+    ollama==0.4.0 \
+    playwright==1.48.0 \
+    websockets==13.0 \
+    aiohttp==3.10.0 \
+    tenacity==8.2.3 \
+    requests==2.31.0
 
 WORKDIR /workspace
 
-RUN mkdir -p /workspace/screenshots
+RUN mkdir -p /workspace/screenshots /workspace/logs
 
-COPY agent_server.py /workspace/
+COPY agent_server.py .
 
-EXPOSE 5555
+EXPOSE 5555 6080
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
     CMD curl -f http://localhost:5555/health || exit 1
 
 CMD ["python", "-u", "agent_server.py"]
