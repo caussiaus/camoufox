@@ -6,8 +6,9 @@ services:
       - "5555:5555"
       - "6080:6080"
     volumes:
-      - .:/screenshots
-      - ./logs:/workspace/logs
+      - /data/camoufox/screenshots:/workspace/screenshots
+      - /data/camoufox/logs:/workspace/logs
+      
     environment:
       - OLLAMABASE=http://192.168.10.50:11434
       - VLMMODEL=redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest
