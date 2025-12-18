@@ -8,20 +8,17 @@ services:
     volumes:
       - /data/camoufox/screenshots:/workspace/screenshots
       - /data/camoufox/logs:/workspace/logs
-      
     environment:
-      - OLLAMABASE=http://192.168.10.50:11434
-      - VLMMODEL=redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest
-      - CAMOUFOXVISUAL=true
-      - CAMOUFOXHEADLESS=false
-      - PYTHONUNBUFFERED=1
-      - NAV_TIMEOUT_MS=60000
-      - SHOT_TIMEOUT_MS=60000
-      - DEBUG_DWELL_SEC=0
+      OLLAMABASE: http://192.168.10.50:11434
+      VLMMODEL: redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest
+      CAMOUFOXVISUAL: "true"  # HEADLESS derives from this in code
+      PYTHONUNBUFFERED: "1"
+      NAV_TIMEOUT_MS: "60000"
+      SHOT_TIMEOUT_MS: "60000"
+      DEBUG_DWELL_SEC: "120"
     dns:
-      - 192.168.10.50  # Pi-hole
-      - 1.1.1.1        # Fallback
-    
+      - 192.168.10.50
+      - 1.1.1.1
     mem_limit: 4g
     shm_size: 2gb
     restart: unless-stopped
