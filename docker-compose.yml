@@ -1,45 +1,26 @@
-version: "3.9"
-
 services:
   camoufox-agent:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: camoufox-agent
-    
     ports:
       - "5555:5555"
       - "6080:6080"
-    
     volumes:
-      - ./screenshots:/workspace/screenshots
+      - .:/screenshots
       - ./logs:/workspace/logs
-    
     environment:
-      - OLLAMA_BASE=http://ollama:11434
-      - VLM_MODEL=redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest
-      - TEXT_MODEL=qwen2.5:14b
-      - CAMOUFOX_VISUAL=false
-      - CAMOUFOX_HEADLESS=true
+      - OLLAMABASE=http://192.168.10.50:11434
+      - VLMMODEL=redule26/huihui_ai_qwen2.5-vl-7b-abliterated:latest
+      - CAMOUFOXVISUAL=true
+      - CAMOUFOXHEADLESS=false
       - PYTHONUNBUFFERED=1
+      - NAV_TIMEOUT_MS=60000
+      - SHOT_TIMEOUT_MS=60000
+      - DEBUG_DWELL_SEC=0
+    dns:
+      - 192.168.10.50  # Pi-hole
+      - 1.1.1.1        # Fallback
     
-    mem_limit: 3g
-    shm_size: 1gb
-    
+    mem_limit: 4g
+    shm_size: 2gb
     restart: unless-stopped
-    
-    networks:
-      - default
-    
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5555/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
