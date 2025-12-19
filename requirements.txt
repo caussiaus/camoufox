@@ -1,0 +1,28 @@
+# Camoufox Agent Server - Corrected Dependencies
+camoufox==0.2.14
+flask==3.0.3
+ollama>=0.4.0
+
+# Browser-use stack (LATEST STABLE)
+browser-use==0.2.7
+langchain-core==0.3.64
+langchain==0.3.25
+langchain-ollama==0.3.3
+
+# Playwright
+playwright>=1.52.0
+
+# Core dependencies
+pydantic>=2.11.5
+pydantic-core>=2.27.0
+httpx>=0.28.1
+python-dotenv>=1.0.1
+requests>=2.32.3
+
+# Additional dependencies
+tenacity==9.0.0
+h2==4.1.0
+hpack==4.0.0
+hyperframe==6.0.1
+Pillow==11.2.1
+PyYAML==6.0.2
