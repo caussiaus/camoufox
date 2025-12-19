@@ -59,48 +59,64 @@ def scrape():
     data = request.json or {}
     url = data.get('url')
     task = data.get('task', 'Extract information')
-    
+
+    # NEW: options for agents
+    num_shots = int(data.get('num_shots', 1))          # 1..N screenshots
+    return_images = bool(data.get('return_images', True))
+    return_text  = bool(data.get('return_text', True))
+
     if not url:
         return jsonify({'error': 'Missing url'}), 400
-    
-    print(f"🦊 Scraping: {url}")
-    
+
+    print(f"🦊 Scraping: {url} (shots={num_shots})")
+
     try:
-        ts = int(time.time())
-        screenshot = f"/workspace/screenshots/{ts}.png"
-        
+        screenshots = []
+
         with Camoufox(headless=HEADLESS, humanize=True) as browser:
             page = browser.new_page()
             page.goto(url, wait_until='networkidle', timeout=NAV_TIMEOUT_MS)
-            page.screenshot(path=screenshot, full_page=True, timeout=SHOT_TIMEOUT_MS)
-            
-            if CAMOUFOX_VISUAL and DEBUG_DWELL_SEC > 0:
-                time.sleep(DEBUG_DWELL_SEC)
-        
-        try:
-            img = Image.open(screenshot)
-            img = img.convert('RGB')
-            img = img.resize((1600, 900))
-            img.save(screenshot, format='PNG', optimize=True)
-            print(f"✅ Image normalized: {screenshot}")
-        except Exception as e:
-            print(f"⚠️ Image normalization failed: {e}")
-        
-        with open(screenshot, 'rb') as f:
-            img_b64 = base64.b64encode(f.read()).decode()
-        
-        response = client.generate(
-            model=VISION_MODEL,
-            prompt=f"Analyze screenshot for task: {task}",
-            images=[img_b64]
-        )
-        
-        return jsonify({
-            "status": "ok",
-            "screenshot": screenshot,
-            "analysis": response['response']
-        })
-    
+
+            for i in range(num_shots):
+                ts = int(time.time() * 1000)
+                shot_path = f"/workspace/screenshots/{ts}_{i}.png"
+                page.screenshot(path=shot_path, full_page=True, timeout=SHOT_TIMEOUT_MS)
+                screenshots.append(shot_path)
+
+                if CAMOUFOX_VISUAL and DEBUG_DWELL_SEC > 0:
+                    time.sleep(DEBUG_DWELL_SEC)
+
+        images_b64 = []
+        for shot in screenshots:
+            try:
+                img = Image.open(shot).convert('RGB')
+                img = img.resize((1600, 900))
+                img.save(shot, format='PNG', optimize=True)
+
+                with open(shot, 'rb') as f:
+                    images_b64.append(base64.b64encode(f.read()).decode())
+            except Exception as e:
+                print(f"⚠️ Image normalization failed for {shot}: {e}")
+
+        analysis = None
+        if return_text:
+            # For multi-image vision models this is usually fine
+            response = client.generate(
+                model=VISION_MODEL,
+                prompt=f"Analyze these screenshot(s) for task: {task}",
+                images=images_b64
+            )
+            analysis = response["response"]
+
+        payload = {"status": "ok"}
+        if return_text:
+            payload["analysis"] = analysis
+        if return_images:
+            payload["screenshots"] = screenshots
+            payload["images_b64"] = images_b64
+
+        return jsonify(payload)
+
     except Exception as e:
         print(f"❌ Error: {e}")
         return jsonify({"status": "fail", "error": str(e)}), 500
@@ -109,25 +125,32 @@ def scrape():
 def agent():
     if not BROWSER_USE_AVAILABLE:
         return jsonify({'error': 'browser-use not installed'}), 500
-    
+
     data = request.json or {}
     task = data.get('task')
-    
+
     if not task:
         return jsonify({'error': 'Missing task'}), 400
-    
+
     model_name = data.get('model', AGENT_MODEL)
-    max_steps = int(data.get('max_steps', 15))
+
+    # Backwards compatible: accept max_actions_per_step or max_steps
+    max_actions_per_step = int(
+        data.get('max_actions_per_step', data.get('max_steps', 15))
+    )
+
     headless = data.get('headless', HEADLESS)
-    
-    print(f"🦊 AI Agent: {task[:80]}...")
-    
+
+    print(f"🦊 AI Agent: {task[:80]}... (max_actions_per_step={max_actions_per_step})")
+
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(run_browser_agent(task, model_name, max_steps, headless))
+        result = loop.run_until_complete(
+            run_browser_agent(task, model_name, max_actions_per_step, headless)
+        )
         loop.close()
-        
+
         return jsonify({
             "status": "ok",
             "mode": "ai_agent",
@@ -135,15 +158,24 @@ def agent():
             "model": model_name,
             "result": result
         })
-    
+
     except Exception as e:
         print(f"❌ Agent error: {e}")
         return jsonify({"status": "fail", "error": str(e)}), 500
 
-async def run_browser_agent(task: str, model_name: str, max_steps: int, headless: bool):
+async def run_browser_agent(task: str, model_name: str,
+                            max_actions_per_step: int, headless: bool):
     llm = ChatOllama(model=model_name, base_url=OLLAMA_BASE, temperature=0.1)
-    browser = Browser(config=BrowserConfig(headless=headless, slow_mo=200 if not headless else 0))
-    agent = Agent(task=task, llm=llm, browser=browser, max_actions_per_step=max_steps)
+    browser = Browser(config=BrowserConfig(
+        headless=headless,
+        slow_mo=200 if not headless else 0
+    ))
+    agent = Agent(
+        task=task,
+        llm=llm,
+        browser=browser,
+        max_actions_per_step=max_actions_per_step
+    )
     result = await agent.run()
     await browser.close()
     return result
