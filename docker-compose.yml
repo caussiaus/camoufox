@@ -1,4 +1,5 @@
 services:
+<<<<<<< HEAD
   camoufox-agent:
     build: .
     container_name: camoufox-agent
@@ -22,3 +23,30 @@ services:
     mem_limit: 4g
     shm_size: 2gb
     restart: unless-stopped
+=======
+  camoufox:
+    image: caussiaus/camoufox:latest  # Your custom image
+    restart: unless-stopped
+    
+    ports:
+      - "6080:6080"  # noVNC web interface
+      - "5900:5900"  # VNC server
+    
+    environment:
+      - DISPLAY=:99
+    
+    volumes:
+      - /data/camoufox:/root/.cache/camoufox  # Changed from named volume
+      - /data/vision-agent/processed_images:/screenshots  # Share with n8n
+      - /data/camoufox/scripts:/workspace  # Your scripts
+    
+    shm_size: '2gb'  # CRITICAL - prevents browser crashes
+    
+    networks:
+      - coolify
+    
+    labels:
+      - coolify.managed=true
+      - caddy=camoufox.caseyjussaume.com
+      - caddy.reverse_proxy={{upstreams 6080}}  # Changed from 8080
+>>>>>>> origin/master

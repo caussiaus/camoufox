@@ -1,0 +1,15 @@
+services:
+  camoufox:
+    build: .
+    image: caussiaus/camoufox:latest
+    ports:
+      - "6080:6080"  # noVNC
+      - "5900:5900"  # VNC
+      - "8000:8000"  # API
+    environment:
+      - DISPLAY=:99
+    volumes:
+      - /data/camoufox:/root/.cache/camoufox
+      - /data/vision-agent/processed_images:/screenshots
+    shm_size: '2gb'
+    restart: unless-stopped
