@@ -15,10 +15,13 @@ Pillow==11.2.1
 
 # agent stack
 browser-use==0.7.8
-langchain==1.2.0
-langchain-ollama==0.3.10
+langchain==0.3.11
+langchain-ollama==0.3.0
 
 
 # shared deps pinned to safe versions
 httpx==0.28.1
 PyYAML==6.0.2
+
+playwright==1.49.1
+pydantic>=2.0.0
