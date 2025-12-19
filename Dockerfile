@@ -1,6 +1,5 @@
 FROM python:3.11-slim
 
-<<<<<<< HEAD
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1
@@ -73,4 +72,3 @@ RUN chmod +x start.sh
 RUN mkdir -p screenshots
 
 CMD ["./start.sh"]
->>>>>>> origin/master

@@ -1,5 +1,5 @@
 services:
-<<<<<<< HEAD
+
   camoufox-agent:
     build: .
     container_name: camoufox-agent
@@ -23,7 +23,7 @@ services:
     mem_limit: 4g
     shm_size: 2gb
     restart: unless-stopped
-=======
+
   camoufox:
     image: caussiaus/camoufox:latest  # Your custom image
     restart: unless-stopped
@@ -49,4 +49,3 @@ services:
       - coolify.managed=true
       - caddy=camoufox.caseyjussaume.com
       - caddy.reverse_proxy={{upstreams 6080}}  # Changed from 8080
->>>>>>> origin/master
