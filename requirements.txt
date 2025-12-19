@@ -2,10 +2,10 @@ camoufox==0.2.14
 flask==3.0.3
 
 
-# let ollama float to a version that supports httpx 0.28.x
+
 ollama
 
-# must match browser-use requirement
+
 aiohttp==3.12.15
 
 
@@ -20,7 +20,7 @@ pydantic-core>=2.27.0
 httpx>=0.28.1
 python-dotenv>=1.0.1
 requests>=2.32.3
->>>>>>> origin/master
+
 tenacity==9.0.0
 h2==4.1.0
 hpack==4.0.0
@@ -28,17 +28,16 @@ hyperframe==6.0.1
 Pillow==11.2.1
 
 
-# agent stack
+
 browser-use==0.7.8
 langchain==0.3.11
 langchain-ollama==0.3.0
 
 
-# shared deps pinned to safe versions
+
 httpx==0.28.1
 PyYAML==6.0.2
 
 playwright==1.49.1
 pydantic>=2.0.0
 PyYAML==6.0.2
-
