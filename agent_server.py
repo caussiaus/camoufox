@@ -143,7 +143,7 @@ def agent():
 async def run_browser_agent(task: str, model_name: str, max_steps: int, headless: bool):
     llm = ChatOllama(model=model_name, base_url=OLLAMA_BASE, temperature=0.1)
     browser = Browser(config=BrowserConfig(headless=headless, slow_mo=200 if not headless else 0))
-    agent = Agent(task=task, llm=llm, browser=browser, max_steps=max_steps)
+    agent = Agent(task=task, llm=llm, browser=browser, max_actions_per_step=max_steps)
     result = await agent.run()
     await browser.close()
     return result
