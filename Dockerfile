@@ -38,7 +38,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 
 # Single entrypoint
 CMD ["/workspace/start.sh"]
-=======
+
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     libgtk-3-0 \
